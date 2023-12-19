@@ -4,8 +4,8 @@ session_start();
 
 // Tableau permettant de simuler une base de donnée d'utilisateurs
 $users = [
-    'user1' => ['firstName' => 'John', 'lastName' => 'Doe', 'password' => '1234', ],
-    'user2' => ['firstName' => 'Jane', 'lastName' => 'Doe', 'password' => '0000', ]
+    'user1' => ['firstName' => 'John', 'lastName' => 'Doe', 'password' => '1234',],
+    'user2' => ['firstName' => 'Jane', 'lastName' => 'Doe', 'password' => '0000',]
 ];
 
 ?>
@@ -58,7 +58,7 @@ $users = [
             // On switch les pages en fonction de leur valeur dans l'url
             switch ($page) {
 
-                // Le cas où page = home
+                    // Le cas où page = home
                 case 'home':
 
                     // S'il y a un utilisateur connecté dans la session,
@@ -73,7 +73,7 @@ $users = [
                         echo "<h2>Accueil</h2>";
                     break;
 
-                // Le cas où page = userInformations
+                    // Le cas où page = userInformations
                 case 'userInformations':
 
                     // S'il y a un utilisateur connecté dans la session
@@ -94,19 +94,33 @@ $users = [
                     }
                     break;
 
-                // Le cas où page = settings
+                    // Le cas où page = settings
+                    // Le cas où page = settings
                 case 'settings':
 
                     // S'il y a un utilisateur connecté dans la session
                     if (isset($_SESSION['user'])) {
 
-                        // On affiche les paramètres de l'utilisateur connecté
-                        echo "WORK IN PROGRESS <h2>Vos paramètres</h2>";
+                        // On crée une variable user en fonction de cet utilisateur
+                        $user = $_SESSION['user'];
 
-                        // NOTE : Puisque l'on va devoir créer des inputs qui vont contenir des " et des '
-                        // il faut sortir de la balise php car sinon il faudrait 3 types de guillemets, ce qui n'est pas possible
+                        // Si le formulaire est soumis
+                        if (isset($_POST['update'])) {
+
+                            // Récupérez les nouvelles valeurs des champs
+                            $newFirstName = $_POST['firstName'];
+                            $newLastName = $_POST['lastName'];
+                            $newPassword = $_POST['password'];
+
+                            // Mettez à jour les informations de l'utilisateur dans la session
+                            $_SESSION['user']['firstName'] = $newFirstName;
+                            $_SESSION['user']['lastName'] = $newLastName;
+                            $_SESSION['user']['password'] = $newPassword;
+                        }
+
+                        // Affichez les paramètres actuels de l'utilisateur
+                        echo "<h2>Vos paramètres</h2>";
         ?>
-
                         <!-- Début de l'html -->
                         <form method="post" action="">
                             <label for="firstName">Modifiez votre prénom</label>
@@ -115,19 +129,20 @@ $users = [
                             <label for="lastName">Modifiez votre nom</label>
                             <input type="text" name="lastName" value="<?php echo $_SESSION['user']['lastName']; ?>" required>
 
+                            <label for="password">Modifiez votre nom</label>
+                            <input type="password" name="password" value="<?php echo $_SESSION['user']['password']; ?>" required>
+
                             <input type="submit" name="update" value="Mettre à jour">
                         </form>
                         <!-- Fin de l'html -->
-
         <?php
-                    }
-                    // Sinon, on affiche qu'il faut se connecter
-                    else {
+                    } else {
+                        // Sinon, on affiche qu'il faut se connecter
                         echo "<p>Veuillez vous connecter.</p>";
                     }
                     break;
 
-                // Le cas où page = connection
+                    // Le cas où page = connection
                 case 'connection':
 
                     // S'il n'y a pas d'utilisateur connecté dans la session,
@@ -138,17 +153,29 @@ $users = [
                             $lastName = $_POST['lastName'];
                             $password = $_POST['password'];
 
+                            $userSignedIn = false;
+
                             // Vérifier les informations d'identification avec le tableau $users
                             foreach ($users as $user => $userInfo) {
-                                if ($userInfo['firstName'] === $firstName && $userInfo['lastName'] === $lastName && $userInfo['password'] === $password) {
-                                    // Authentification réussie, définir la variable de session
-                                    $_SESSION['user'] = $userInfo;
+                                if ($userInfo['firstName'] === $firstName && $userInfo['lastName'] === $lastName) {
+                                    if ($userInfo['password'] === $password) {
+                                        // Authentification réussie, définir la variable de session
+                                        $_SESSION['user'] = $userInfo;
 
-                                    // Rédiriger vers la page d'accueil
-                                    header("Location: ?page=home");
-                                    exit();
-                                    break;
+                                        // Rédiriger vers la page d'accueil
+                                        header("Location: ?page=home");
+                                        exit();
+                                    } else {
+                                        // Mot de passe incorrect
+                                        $userSignedIn = true;
+                                        echo "Le mot de passe est incorrect";
+                                    }
                                 }
+                            }
+
+                            // Afficher le message d'erreur si l'authentification a échoué
+                            if (!$userSignedIn) {
+                                echo "L'utilisateur n'existe pas";
                             }
                         }
 
@@ -166,25 +193,34 @@ $users = [
                             
                                 <input type="submit" name="login" value="Se connecter">
                             </form>';
-                            
                     } else {
                         echo "<p>Vous êtes connecté.</p>";
                     }
                     break;
 
-                // Le cas où page = disconnection
+                    // Le cas où page = disconnection
                 case 'disconnection':
-                
-                if (isset($_SESSION['user'])) {
-                // Détruire la session et rediriger vers la page d'accueil
-                session_destroy();
-                
-                // Rédiriger vers la page d'accueil
-                header("Location: ?page=home");
-                exit();
-                }
+                    if (isset($_SESSION['user'])) {
+                        // Récupérer les informations de l'utilisateur connecté
+                        $currentUser = $_SESSION['user'];
 
-                // Le cas où l'on est pas dans page
+                        // Trouver la clé de l'utilisateur dans le tableau des utilisateurs
+                        $currentUserKey = array_search($currentUser, $users);
+
+                        // Si l'utilisateur est trouvé dans le tableau, le supprimer
+                        if ($currentUserKey !== false) {
+                            unset($users[$currentUserKey]);
+                        }
+
+                        // Détruire la session
+                        session_destroy();
+
+                        // Rédiriger vers la page d'accueil
+                        header("Location: ?page=home");
+                        exit();
+                    }
+
+                    // Le cas où l'on est pas dans page
                 default:
                     echo "<p>Onglet inconnu.</p>";
                     break;
