@@ -119,6 +119,10 @@ $users = [
                             $_SESSION['user']['lastName'] = $newLastName;
                             $_SESSION['user']['age'] = $newAge;
                             $_SESSION['user']['password'] = $newPassword;
+
+                            // Affichez un message de succès
+// A FAIRE : n'affiche cette ligne que si une modification a réellement eu lieu
+                            echo "<p>Vos paramètres ont été mis à jour avec succès.</p>";
                         }
 
                         // Affichez les paramètres actuels de l'utilisateur
@@ -167,9 +171,10 @@ $users = [
                                     if ($userInfo['password'] === $password) {
                                         // Authentification réussie, définir la variable de session
                                         $_SESSION['user'] = $userInfo;
+                                        echo "<p>Vous êtes connecté.</p>";
 
-                                        // Rédiriger vers la page d'accueil
-                                        header("Location: ?page=home");
+// A FAIRE MARCHER  // Rédiriger vers la page d'accueil
+                                        // header("Location: ?page=home");
                                         exit();
                                     } else {
                                         // Mot de passe incorrect
@@ -179,10 +184,12 @@ $users = [
                                 }
                             }
 
+
                             // Afficher le message d'erreur si l'authentification a échoué
                             if (!$userSignedIn) {
                                 echo "L'utilisateur n'existe pas";
                             }
+
                         }
 
                         // Afficher des champs de saisie pour se connecter
@@ -199,8 +206,6 @@ $users = [
                             
                                 <input type="submit" name="login" value="Se connecter">
                             </form>';
-                    } else {
-                        echo "<p>Vous êtes connecté.</p>";
                     }
                     break;
 
@@ -210,8 +215,8 @@ $users = [
                         // Détruire la session
                         session_destroy();
 
-                        // Rédiriger vers la page d'accueil
-                        header("Location: ?page=home");
+// A FAIRE MARCHER  // Rédiriger vers la page d'accueil
+                        // header("Location: ?page=home");
                         exit();
                     }
 
