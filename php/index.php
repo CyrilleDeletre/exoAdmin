@@ -201,17 +201,6 @@ $users = [
                     // Le cas où page = disconnection
                 case 'disconnection':
                     if (isset($_SESSION['user'])) {
-                        // Récupérer les informations de l'utilisateur connecté
-                        $currentUser = $_SESSION['user'];
-
-                        // Trouver la clé de l'utilisateur dans le tableau des utilisateurs
-                        $currentUserKey = array_search($currentUser, $users);
-
-                        // Si l'utilisateur est trouvé dans le tableau, le supprimer
-                        if ($currentUserKey !== false) {
-                            unset($users[$currentUserKey]);
-                        }
-
                         // Détruire la session
                         session_destroy();
 
