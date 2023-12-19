@@ -1,96 +1,14 @@
 <?php
+// Démarre une session
 session_start();
 
-// Simulation d'une base de données d'utilisateurs (à remplacer par une vraie base de données en production)
-$utilisateurs = [
-    'utilisateur1' => ['nom' => 'Doe', 'prenom' => 'Jane', 'password' => '1234', 'email' => 'john@example.com'],
-    'utilisateur2' => ['nom' => 'Doe', 'prenom' => 'John', 'password' => '0000', 'email' => 'jane@example.com']
+// Tableau permettant de simuler une base de donnée d'utilisateurs
+$users = [
+    'user1' => ['firstName' => 'John', 'lastName' => 'Doe', 'password' => '1234', ],
+    'user2' => ['firstName' => 'Jane', 'lastName' => 'Doe', 'password' => '0000', ]
 ];
 
-// Fonction pour afficher les informations de l'utilisateur actuel
-function afficherInformationsUtilisateur()
-{
-    if (isset($_SESSION['utilisateur'])) {
-        $utilisateur = $_SESSION['utilisateur'];
-        echo "<p>Nom: {$utilisateur['nom']}</p>";
-        echo "<p>Prénom: {$utilisateur['prenom']}</p>";
-    } else {
-        echo "<p>Aucun utilisateur connecté.</p>";
-    }
-}
-
-// Vérifier si le formulaire de mise à jour des paramètres a été soumis
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update'])) {
-    // Mettre à jour les informations de la session avec les données du formulaire
-    $_SESSION['utilisateur']['nom'] = isset($_POST['nom']) ? $_POST['nom'] : $_SESSION['utilisateur']['nom'];
-    $_SESSION['utilisateur']['prenom'] = isset($_POST['prenom']) ? $_POST['prenom'] : $_SESSION['utilisateur']['prenom'];
-
-    // Mettre à jour les informations dans le tableau $utilisateurs
-    $utilisateur_cle = $_SESSION['utilisateur_cle'];
-
-    // Assurez-vous que l'index existe dans le tableau $utilisateurs
-    if (isset($utilisateurs[$utilisateur_cle])) {
-        // Mettre à jour les informations dans le tableau $utilisateurs
-        $utilisateurs[$utilisateur_cle]['nom'] = isset($_POST['nom']) ? $_POST['nom'] : $utilisateurs[$utilisateur_cle]['nom'];
-        $utilisateurs[$utilisateur_cle]['prenom'] = isset($_POST['prenom']) ? $_POST['prenom'] : $utilisateurs[$utilisateur_cle]['prenom'];
-
-        // Assurez-vous que la clé 'password' existe dans le tableau $utilisateurs avant de l'ajouter à la session
-        $_SESSION['utilisateur']['password'] = isset($utilisateurs[$utilisateur_cle]['password']) ? $utilisateurs[$utilisateur_cle]['password'] : null;
-    } else {
-        // Gérer l'erreur si l'index n'existe pas dans le tableau $utilisateurs
-        echo "<p>Erreur lors de la mise à jour des paramètres de l'utilisateur (index manquant).</p>";
-    }
-}
-
-
-
-// Vérifier si le formulaire de connexion ou de création de compte a été soumis
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $nom = $_POST['nom'];
-    $prenom = $_POST['prenom'];
-    $password = $_POST['password'];
-
-    // Initialisez la variable $utilisateur_trouve
-    $utilisateur_trouve = false;
-
-    if (isset($_POST['login'])) {
-        // Logique de connexion existante
-        // Vérifier si l'utilisateur existe dans la base de données de simulation
-        foreach ($utilisateurs as $cle => $utilisateur) {
-            if ($utilisateur['nom'] === $nom && $utilisateur['prenom'] === $prenom && $utilisateur['password'] === $password) {
-                $_SESSION['utilisateur_cle'] = $cle; // Stocker la clé de l'utilisateur dans la session
-                $utilisateur_trouve = true;
-                $_SESSION['utilisateur'] = $utilisateur; // Stocker les informations de l'utilisateur dans la session
-                break;
-            }
-        }
-
-        if (!$utilisateur_trouve) {
-            echo "<p>Utilisateur non trouvé.</p>";
-        }
-    } elseif (isset($_POST['create_account'])) {
-        // Logique pour créer un nouveau compte
-        // Vous pouvez ajouter une logique de validation et de stockage des nouveaux utilisateurs ici.
-        // Dans cet exemple, nous ajoutons simplement un nouvel utilisateur à la base de données de simulation.
-        $nouvel_utilisateur = ['nom' => $nom, 'prenom' => $prenom, 'password' => $password];
-        $utilisateurs[] = $nouvel_utilisateur;
-
-        // Connectez l'utilisateur nouvellement créé en enregistrant ses informations dans la session
-        $_SESSION['utilisateur_cle'] = count($utilisateurs) - 1; // Stocker la clé du nouvel utilisateur dans la session
-        $_SESSION['utilisateur'] = $nouvel_utilisateur; // Stocker les informations de l'utilisateur dans la session
-        $utilisateur_trouve = true; // Mettez à jour la variable ici si nécessaire
-    }
-}
-
-// Ajouter une logique pour gérer la déconnexion
-if (isset($_GET['onglet']) && $_GET['onglet'] === 'deconnexion') {
-    // Détruire la session et rediriger vers la page d'accueil
-    session_destroy();
-    header('Location: index.php?onglet=accueil');
-    exit();
-}
 ?>
-
 <!DOCTYPE html>
 <html lang="fr">
 
@@ -102,39 +20,27 @@ if (isset($_GET['onglet']) && $_GET['onglet'] === 'deconnexion') {
 
 <body>
     <header>
-
         <nav>
             <ul>
                 <li class="admin">Panneaux d'administration</li>
                 <?php
-                // Afficher la lien vers la page d'Accueil
-                echo '<li><a href="?onglet=accueil">Accueil</a></li>';
+                // On crée une variable pour vérifier s'il y a un utilisateur connecté dans la session
+                $userConnected = isset($_SESSION['user']);
 
-                // Afficher les informations personnelles de l'utilisateur si il y'a un utilisateur
-                if (isset($_SESSION['utilisateur'])) {
-                    // Si un utilisateur est connecté, afficher le lien des informations personnelles
-                    echo '<li><a href="?onglet=utilisateurs">Informations personnelles</a></li>';
-                } else {
-                    // Si aucun utilisateur ne rien afficher
-                    echo '';
+                // On affiche le bouton d'accueil
+                echo '<li><a href="?page=home">Accueil</a></li>';
+
+                // S'il y a un utilisateur connecté
+                if ($userConnected) {
+                    // On affiche un onglet information personnel, un onglet paramètres et un onglet de déconnexion
+                    echo '<li><a href="?page=userInformations">Informations personnelles</a></li>';
+                    echo '<li><a href="?page=settings">Paramètres</a></li>';
+                    echo '<li><a href="?page=disconnection">Déconnexion</a></li>';
                 }
 
-                // Afficher les paramètres de l'utilisateur si il y'a un utilisateur
-                if (isset($_SESSION['utilisateur'])) {
-                    // Si un utilisateur est connecté, afficher le lien de modification des paramètres
-                    echo '<li><a href="?onglet=parametres">Paramètres</a></li>';
-                } else {
-                    // Si aucun utilisateur ne rien afficher
-                    echo '';
-                }
-
-                // Afficher le lien de connexion/déconnexion en fonction de l'état de la session
-                if (isset($_SESSION['utilisateur'])) {
-                    // Si un utilisateur est connecté, afficher le lien de déconnexion
-                    echo '<li><a href="?onglet=deconnexion">Déconnexion</a></li>';
-                } else {
-                    // Si aucun utilisateur n'est connecté, afficher le lien de connexion
-                    echo '<li><a href="?onglet=connexion">Connexion</a></li>';
+                // Sinon on affiche un onglet de connexion
+                else {
+                    echo '<li><a href="?page=connection">Connexion</a></li>';
                 }
                 ?>
             </ul>
@@ -143,65 +49,146 @@ if (isset($_GET['onglet']) && $_GET['onglet'] === 'deconnexion') {
 
     <div id="contenu">
         <?php
-        // Afficher le contenu de l'onglet correspondant
-        if (isset($_GET['onglet'])) {
-            $onglet = $_GET['onglet'];
-            switch ($onglet) {
-                case 'accueil':
-                    // Afficher le contenu de l'onglet Accueil
-                    echo "<h2>Accueil</h2>";
-                    break;
-                case 'utilisateurs':
-                    // Afficher le contenu de l'onglet Utilisateurs
-                    echo "<h2>Utilisateurs</h2>";
-                    afficherInformationsUtilisateur();
-                    break;
-                case 'parametres':
-                    // Afficher le contenu de l'onglet Paramètres
-                    if (isset($_SESSION['utilisateur'])) {
-                        echo "<h2>Paramètres</h2>";
-        ?>
-                        <form method="post" action="">
-                            <label for="nom">Nouveau Nom:</label>
-                            <input type="text" name="nom" required value="<?php echo $_SESSION['utilisateur']['nom']; ?>">
+        // Si on clique sur un lien qui pointe vers l'url page, on récupère cette url
+        if (isset($_GET['page'])) {
 
-                            <label for="prenom">Nouveau Prénom:</label>
-                            <input type="text" name="prenom" required value="<?php echo $_SESSION['utilisateur']['prenom']; ?>">
+            // On crée une variable $page de l'url 'page' récupéré
+            $page = $_GET['page'];
+
+            // On switch les pages en fonction de leur valeur dans l'url
+            switch ($page) {
+
+                // Le cas où page = home
+                case 'home':
+
+                    // S'il y a un utilisateur connecté dans la session,
+                    if (isset($_SESSION['user'])) {
+                        // On crée une variable user en fonction de cet utilisateur
+                        $user = $_SESSION['user'];
+                        // On affiche dans la page d'accueil un message personnalisé pour cet utilisateur
+                        echo "<h2>Bienvenue dans ton espace personnel, {$user['firstName']} {$user['lastName']}</h2>";
+                    }
+                    // Sinon, on affiche juste un titre d'accueil
+                    else
+                        echo "<h2>Accueil</h2>";
+                    break;
+
+                // Le cas où page = userInformations
+                case 'userInformations':
+
+                    // S'il y a un utilisateur connecté dans la session
+                    if (isset($_SESSION['user'])) {
+
+                        // On crée une variable user en fonction de cet utilisateur
+                        $user = $_SESSION['user'];
+
+                        // On affiche les information de l'utilisateur connecté
+                        echo "<h2>Vos informations personnelles :</h2>";
+                        echo "<p>Prénom : {$user['firstName']}</p>";
+                        echo "<p>Nom : {$user['lastName']}</p>";
+                    }
+
+                    // Sinon, on affiche qu'il n'y a aucun utilisateur connecté
+                    else {
+                        echo "<p>Aucun utilisateur connecté.</p>";
+                    }
+                    break;
+
+                // Le cas où page = settings
+                case 'settings':
+
+                    // S'il y a un utilisateur connecté dans la session
+                    if (isset($_SESSION['user'])) {
+
+                        // On affiche les paramètres de l'utilisateur connecté
+                        echo "WORK IN PROGRESS <h2>Vos paramètres</h2>";
+
+                        // NOTE : Puisque l'on va devoir créer des inputs qui vont contenir des " et des '
+                        // il faut sortir de la balise php car sinon il faudrait 3 types de guillemets, ce qui n'est pas possible
+        ?>
+
+                        <!-- Début de l'html -->
+                        <form method="post" action="">
+                            <label for="firstName">Modifiez votre prénom</label>
+                            <input type="text" name="firstName" value="<?php echo $_SESSION['user']['firstName']; ?>" required>
+
+                            <label for="lastName">Modifiez votre nom</label>
+                            <input type="text" name="lastName" value="<?php echo $_SESSION['user']['lastName']; ?>" required>
 
                             <input type="submit" name="update" value="Mettre à jour">
                         </form>
+                        <!-- Fin de l'html -->
+
         <?php
-                    } else {
-                        echo "<p>Veuillez d'abord vous connecter.</p>";
+                    }
+                    // Sinon, on affiche qu'il faut se connecter
+                    else {
+                        echo "<p>Veuillez vous connecter.</p>";
                     }
                     break;
-                case 'connexion':
-                    // Afficher le contenu de l'onglet Connexion
-                    if (!isset($_SESSION['utilisateur'])) {
+
+                // Le cas où page = connection
+                case 'connection':
+
+                    // S'il n'y a pas d'utilisateur connecté dans la session,
+                    if (!isset($_SESSION['user'])) {
+                        // Vérifier si l'utilisateur existe dans la database
+                        if (isset($_POST['login'])) {
+                            $firstName = $_POST['firstName'];
+                            $lastName = $_POST['lastName'];
+                            $password = $_POST['password'];
+
+                            // Vérifier les informations d'identification avec le tableau $users
+                            foreach ($users as $user => $userInfo) {
+                                if ($userInfo['firstName'] === $firstName && $userInfo['lastName'] === $lastName && $userInfo['password'] === $password) {
+                                    // Authentification réussie, définir la variable de session
+                                    $_SESSION['user'] = $userInfo;
+
+                                    // Rédiriger vers la page d'accueil
+                                    header("Location: ?page=home");
+                                    exit();
+                                    break;
+                                }
+                            }
+                        }
+
+                        // Afficher des champs de saisie pour se connecter
                         echo '
-                        <form method="post" action="">
-                            <label for="nom">Nom:</label>
-                            <input type="text" name="nom" required>
+                            <form method="post" action="">
+                                <label for="firstName">Prénom:</label>
+                                <input type="text" name="firstName" required>
+
+                                <label for="lastName">Nom:</label>
+                                <input type="text" name="lastName" required>
                             
-                            <label for="prenom">Prénom:</label>
-                            <input type="text" name="prenom" required>
-                        
-                            <label for="password">Mot de passe:</label>
-                            <input type="password" name="password" required>
-                        
-                            <input type="submit" name="login" value="Se connecter">
-                            <input type="submit" name="create_account" value="Créer un compte">
-                        </form>';
+                                <label for="password">Mot de passe:</label>
+                                <input type="password" name="password" required>
+                            
+                                <input type="submit" name="login" value="Se connecter">
+                            </form>';
+                            
                     } else {
-                        echo "<p>Vous êtes déjà connecté.</p>";
+                        echo "<p>Vous êtes connecté.</p>";
                     }
                     break;
+
+                // Le cas où page = disconnection
+                case 'disconnection':
+                
+                if (isset($_SESSION['user'])) {
+                // Détruire la session et rediriger vers la page d'accueil
+                session_destroy();
+                
+                // Rédiriger vers la page d'accueil
+                header("Location: ?page=home");
+                exit();
+                }
+
+                // Le cas où l'on est pas dans page
                 default:
                     echo "<p>Onglet inconnu.</p>";
                     break;
             }
-        } else {
-            echo "<p>Veuillez sélectionner un onglet.</p>";
         }
         ?>
     </div>
