@@ -129,7 +129,7 @@ $users = [
                             <label for="lastName">Modifiez votre nom</label>
                             <input type="text" name="lastName" value="<?php echo $_SESSION['user']['lastName']; ?>" required>
 
-                            <label for="password">Modifiez votre nom</label>
+                            <label for="password">Modifiez votre mot de passe</label>
                             <input type="password" name="password" value="<?php echo $_SESSION['user']['password']; ?>" required>
 
                             <input type="submit" name="update" value="Mettre à jour">
