@@ -66,7 +66,7 @@ $users = [
                         // On crée une variable user en fonction de cet utilisateur
                         $user = $_SESSION['user'];
                         // On affiche dans la page d'accueil un message personnalisé pour cet utilisateur
-                        echo "<h2>Bienvenue dans ton espace personnel, {$user['firstName']} {$user['lastName']}</h2>";
+                        echo "<h2>Bienvenue sur ce site, {$user['firstName']} {$user['lastName']}</h2>";
                     }
                     // Sinon, on affiche juste un titre d'accueil
                     else
