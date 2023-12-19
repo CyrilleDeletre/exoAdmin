@@ -4,8 +4,8 @@ session_start();
 
 // Tableau permettant de simuler une base de donnée d'utilisateurs
 $users = [
-    'user1' => ['firstName' => 'John', 'lastName' => 'Doe', 'password' => '1234',],
-    'user2' => ['firstName' => 'Jane', 'lastName' => 'Doe', 'password' => '0000',]
+    'user1' => ['firstName' => 'John', 'lastName' => 'Doe', 'age' => '31', 'password' => '1234', ],
+    'user2' => ['firstName' => 'Jane', 'lastName' => 'Doe', 'age' => '26', 'password' => '0000',]
 ];
 
 ?>
@@ -86,6 +86,7 @@ $users = [
                         echo "<h2>Vos informations personnelles :</h2>";
                         echo "<p>Prénom : {$user['firstName']}</p>";
                         echo "<p>Nom : {$user['lastName']}</p>";
+                        echo "<p>Age : {$user['age']}</p>";
                     }
 
                     // Sinon, on affiche qu'il n'y a aucun utilisateur connecté
@@ -110,11 +111,13 @@ $users = [
                             // Récupérez les nouvelles valeurs des champs
                             $newFirstName = $_POST['firstName'];
                             $newLastName = $_POST['lastName'];
+                            $newAge = $_POST['age'];
                             $newPassword = $_POST['password'];
 
                             // Mettez à jour les informations de l'utilisateur dans la session
                             $_SESSION['user']['firstName'] = $newFirstName;
                             $_SESSION['user']['lastName'] = $newLastName;
+                            $_SESSION['user']['age'] = $newAge;
                             $_SESSION['user']['password'] = $newPassword;
                         }
 
@@ -128,6 +131,9 @@ $users = [
 
                             <label for="lastName">Modifiez votre nom</label>
                             <input type="text" name="lastName" value="<?php echo $_SESSION['user']['lastName']; ?>" required>
+
+                            <label for="age">Modifiez votre âge</label>
+                            <input type="number" name="age" value="<?php echo $_SESSION['user']['age']; ?>" required>
 
                             <label for="password">Modifiez votre mot de passe</label>
                             <input type="password" name="password" value="<?php echo $_SESSION['user']['password']; ?>" required>
